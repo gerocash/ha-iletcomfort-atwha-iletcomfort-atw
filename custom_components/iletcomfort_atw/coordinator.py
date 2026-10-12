@@ -6,7 +6,6 @@ import asyncio
 import logging
 import time
 from collections.abc import Callable
-from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -30,7 +29,6 @@ from .api import (
 )
 from .const import (
     CONF_APPLIANCE_CODE,
-    CONF_ENABLE_MQTT_PUSH,
     CONF_REGION,
     DEFAULT_REGION,
     DOMAIN,
