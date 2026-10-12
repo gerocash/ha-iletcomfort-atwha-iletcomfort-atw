@@ -323,12 +323,59 @@ class ILetComfortPushClient:
             return
 
         topic = str(getattr(msg, "topic", ""))
-        if "/midea/" in topic:
-            topic_family = "midea"
-            channel = topic.rsplit("/", 1)[-1]
+        topic_family = "midea" if "/midea/" in topic else "regional"
+        channel = topic.rsplit("/", 1)[-1]
+
+        # Parse and log safe telemetry hints BEFORE the C3 commandHex decoder.
+        # A valid status frame can still carry additional JSON fields in data.
+        try:
+            message = json.loads(payload)
+        except (TypeError, ValueError):
+            message = None
+
+        data = message.get("data") if isinstance(message, dict) else None
+        if not isinstance(data, dict):
+            data = {}
+        message_type = message.get("messageType") if isinstance(message, dict) else None
+        command_hex = data.get("commandHex")
+        data_keys = sorted(str(key) for key in data.keys())[:40]
+        candidates: dict[str, int | float] = {}
+        for key, value in data.items():
+            key_text = str(key)
+            key_lower = key_text.lower()
+            looks_like_temperature = (
+                "temp" in key_lower
+                or "temperature" in key_lower
+                or "outdoor" in key_lower
+                or "water" in key_lower
+                or "tank" in key_lower
+                or "dhw" in key_lower
+                or key_lower in {"t1", "t2", "t2b", "t3", "t4", "t5", "th", "tp", "twin", "twout"}
+            )
+            if (
+                looks_like_temperature
+                and isinstance(value, (int, float))
+                and not isinstance(value, bool)
+            ):
+                candidates[key_text[:40]] = value
+
+        if message is not None:
+            _LOGGER.debug(
+                "MQTT scoped message topic_family=%s channel=%s message_type=%r "
+                "data_keys=%s temperature_candidates=%s",
+                topic_family,
+                channel,
+                message_type,
+                data_keys,
+                candidates,
+            )
         else:
-            topic_family = "regional"
-            channel = topic.rsplit("/", 1)[-1]
+            _LOGGER.debug(
+                "MQTT scoped non-JSON message topic_family=%s channel=%s length=%d",
+                topic_family,
+                channel,
+                len(payload),
+            )
 
         status = decode_push_payload(payload)
         if status is not None:
@@ -340,52 +387,8 @@ class ILetComfortPushClient:
             self._on_status(status)
             return
 
-        # Keep a privacy-safe diagnostic trail for non-status messages. We
-        # log keys and candidate temperature values only; never the payload,
-        # appliance code, credentials, tokens, or full JSON envelope.
-        try:
-            message = json.loads(payload)
-            data = message.get("data") if isinstance(message, dict) else None
-            if not isinstance(data, dict):
-                data = {}
-            message_type = message.get("messageType") if isinstance(message, dict) else None
-            command_hex = data.get("commandHex")
-            data_keys = sorted(str(key) for key in data.keys())[:40]
-            candidates: dict[str, int | float] = {}
-            for key, value in data.items():
-                key_text = str(key)
-                key_lower = key_text.lower()
-                looks_like_temperature = (
-                    "temp" in key_lower
-                    or "temperature" in key_lower
-                    or "outdoor" in key_lower
-                    or "water" in key_lower
-                    or "tank" in key_lower
-                    or "dhw" in key_lower
-                    or key_lower in {"t1", "t2", "t2b", "t3", "t4", "t5", "th", "tp", "twin", "twout"}
-                )
-                if looks_like_temperature and isinstance(value, (int, float)) and not isinstance(value, bool):
-                    candidates[key_text[:40]] = value
-            _LOGGER.debug(
-                "MQTT scoped message topic_family=%s channel=%s message_type=%r "
-                "data_keys=%s temperature_candidates=%s",
-                topic_family,
-                channel,
-                message_type,
-                data_keys,
-                candidates,
-            )
-        except (TypeError, ValueError):
-            _LOGGER.debug(
-                "MQTT scoped non-JSON message topic_family=%s channel=%s length=%d",
-                topic_family,
-                channel,
-                len(payload),
-            )
-            return
-
         # The phone app may publish control frames on the same scoped topic.
-        # Log a valid frame for research but not the surrounding JSON envelope.
+        # Log valid frames for research, never the surrounding JSON envelope.
         if isinstance(command_hex, str) and _HEX_FRAME.fullmatch(command_hex):
             _LOGGER.debug(
                 "MQTT unhandled scoped frame message_type=%r command_hex=%s",
