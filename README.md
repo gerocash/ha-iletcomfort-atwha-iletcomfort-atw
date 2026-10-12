@@ -35,4 +35,4 @@ Use the existing account only when the official phone app is closed; the cloud h
 
 ## Current status
 
-Experimental test build `0.1.1` (MQTT-only, read-only). The placeholder-pattern fix is based on captured 171H120F response bytes and is intended to remove fabricated readings. A successful Home Assistant connection and valid live outdoor-temperature reading still need to be verified on the user's instance.
+Experimental test build `0.1.2` (MQTT-only, read-only). The placeholder-pattern fix is based on captured 171H120F response bytes and is intended to remove fabricated readings. A successful Home Assistant connection and valid live outdoor-temperature reading still need to be verified on the user's instance.
