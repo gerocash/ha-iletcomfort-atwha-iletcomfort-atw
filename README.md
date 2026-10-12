@@ -9,13 +9,13 @@ Separate Home Assistant integration for investigating the ITS/BTRI C3 heat-pump 
 - Applies the ATW 171H120F profile.
 - Recognizes both the known Galmet placeholder frame and the repeated `03 <same byte> 00 00 00 00` sensor template observed on this unit.
 - Reports untrusted sensor fields as unavailable instead of inventing values such as -35 °C.
-- Uses one initial cloud snapshot during setup, then listens to the device-specific MQTT push topic only. It does not poll every minute and never subscribes to wildcard topics.
+- Uses one initial cloud snapshot during setup, then listens to exact appliance-scoped MQTT topics. It checks the confirmed C3 topic and the documented regional `dev`, `will`, and `hbt` topic variants; it does not poll every minute or subscribe to wildcards.
 
 ## Important limitation
 
-This build does **not** make the missing outdoor/water sensor temperatures appear by itself. The observed sensor-query response does not carry trustworthy live measurements in this placeholder variant. The official app showed about 9 °C outdoor temperature and 55 °C tank temperature; Home Assistant currently reads 55 °C tank temperature and a 44 °C DHW target from the status frame.
+This build does **not** make the missing outdoor/water sensor temperatures appear by itself. The observed sensor-query response does not carry trustworthy live measurements in this placeholder variant. The official app previously showed about 9 °C outdoor temperature and 55 °C tank temperature. The latest observed HA status frame decodes 50 °C tank temperature and a 44 °C DHW target; the app/HA tank reading was not simultaneous, so that difference still needs checking.
 
-MQTT is now enabled in the test build. The documented push handler currently decodes subtype 0x01 status frames; other valid command frames are debug-logged for investigation. The source for the missing outdoor reading has not yet been identified. This repository deliberately does not guess byte offsets or publish placeholder bytes as real measurements.
+MQTT is enabled in the test build. Incoming JSON is inspected for temperature-like field names and values before the subtype 0x01 status decoder runs. Subscription acknowledgements are logged so we can distinguish a rejected topic from a quiet topic. The actual live-temperature source has not yet been identified. This repository deliberately does not guess byte offsets or publish placeholder bytes as real measurements.
 
 ## Install with HACS
 
