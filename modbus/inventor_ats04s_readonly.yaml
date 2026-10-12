@@ -295,7 +295,6 @@ modbus:
         input_type: holding
         data_type: uint16
         scan_interval: 60
-        entity_category: diagnostic
 
       - name: Inventor Electrical Energy Low Word
         unique_id: inventor_mthermal_energy_low
@@ -304,7 +303,6 @@ modbus:
         input_type: holding
         data_type: uint16
         scan_interval: 60
-        entity_category: diagnostic
 
       - name: Inventor Heating COP Raw
         unique_id: inventor_mthermal_cop_raw
@@ -324,4 +322,3 @@ modbus:
         input_type: holding
         data_type: uint16
         scan_interval: 300
-        entity_category: diagnostic
