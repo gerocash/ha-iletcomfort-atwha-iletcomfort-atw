@@ -1,0 +1,62 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "iLetComfort Heat Pump",
+        "description": "Enter your iLetComfort / Dollin cloud credentials and pick the region your account is registered in.",
+        "data": {
+          "email": "Email",
+          "password": "Password",
+          "region": "Region"
+        }
+      },
+      "device": {
+        "title": "Select device",
+        "description": "Choose the appliance to add. Re-run the integration to add additional devices on the same account.",
+        "data": {
+          "appliance_code": "Device"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid email or password.",
+      "cannot_connect": "Unable to connect to the Dollin cloud API. If your account is registered in Europe, switch the Region to Europe. Check Home Assistant logs for details.",
+      "no_devices": "Login succeeded but no devices were found on this account.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  },
+  "selector": {
+    "region": {
+      "options": {
+        "us": "United States",
+        "eu": "Europe"
+      }
+    },
+    "operation_mode": {
+      "options": {
+        "ha_primary": "HA is the primary client (polling and control)",
+        "phone_app": "Leave the phone app connected (read-only push)"
+      }
+    }
+  },
+  "issues": {
+    "device_offline": {
+      "title": "Heat pump appears offline",
+      "description": "Home Assistant has been receiving empty responses from device `{appliance_code}` for several minutes, so entities are showing the last known values. This usually means the heat pump has lost its connection to the iLetComfort cloud, or has been powered off. Check the device in the official iLetComfort / BTRI mobile app — if it shows as offline there too, the issue is on the device or vendor cloud side, not Home Assistant. The card will clear automatically once the device starts responding again."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "iLetComfort options",
+        "description": "Choose which client owns the cloud account session. HA primary keeps the existing polling and control behavior. Phone app coexistence is read-only: after an initial login to mint its MQTT certificate, HA stops account polling and blocks control commands, so the official app can remain signed in. If MQTT disconnects, entities become unavailable instead of HA taking the phone's session.",
+        "data": {
+          "operation_mode": "Operation mode"
+        }
+      }
+    }
+  }
+}
