@@ -74,16 +74,21 @@ def certificate_expiry(certificate_pem: str) -> datetime:
 
 
 def push_topics(region: str, appliance_code: str) -> list[str]:
-    """Return the push topics to subscribe to for one appliance.
+    """Return known MQTT topic variants scoped to exactly one appliance.
 
-    Scoped strictly to ``appliance_code`` — the broker grants wildcard
-    subscriptions that would leak other appliances' data, so we never use one.
-    ``midea/dev`` is the topic C3 heat pumps publish status on (hardware-
-    confirmed, issue #55); the ``<region>_<code>`` shape #48 described carries
-    other appliance families and was silent for a C3 unit in testing, so it is
-    not subscribed.
+    Never use wildcards: the broker may expose other appliances' data.
+    We subscribe to the confirmed C3 topic and the documented regional dev /
+    will / hbt topic family so we can safely observe which family this tenant
+    actually publishes to.
     """
-    return [f"{region}/midea/dev/{appliance_code}"]
+    return [
+        f"{region}/midea/dev/{appliance_code}",
+        f"{region}/midea/will/{appliance_code}",
+        f"{region}/midea/hbt/{appliance_code}",
+        f"{region}/{region}_{appliance_code}/dev",
+        f"{region}/{region}_{appliance_code}/will",
+        f"{region}/{region}_{appliance_code}/hbt",
+    ]
 
 
 def decode_push_payload(payload: str) -> ITSStatus | None:
@@ -316,27 +321,77 @@ class ILetComfortPushClient:
             payload = msg.payload.decode("utf-8", "replace")
         except AttributeError:
             return
+
+        topic = str(getattr(msg, "topic", ""))
+        if "/midea/" in topic:
+            topic_family = "midea"
+            channel = topic.rsplit("/", 1)[-1]
+        else:
+            topic_family = "regional"
+            channel = topic.rsplit("/", 1)[-1]
+
         status = decode_push_payload(payload)
-        if status is None:
-            # The phone app may publish control frames on this same appliance-
-            # scoped topic. Keep a deliberately narrow debug trail so the
-            # write protocol can be established from hardware evidence. Never
-            # dump the full JSON envelope: it can contain appliance metadata.
-            try:
-                message = json.loads(payload)
-                data = message.get("data") if isinstance(message, dict) else None
-                command_hex = data.get("commandHex") if isinstance(data, dict) else None
-            except (TypeError, ValueError):
-                command_hex = None
-                message = None
-            if isinstance(command_hex, str) and _HEX_FRAME.fullmatch(command_hex):
-                _LOGGER.debug(
-                    "MQTT unhandled scoped frame message_type=%r command_hex=%s",
-                    message.get("messageType"),
-                    command_hex.lower(),
-                )
+        if status is not None:
+            _LOGGER.debug(
+                "MQTT decoded status push received (topic_family=%s, channel=%s)",
+                topic_family,
+                channel,
+            )
+            self._on_status(status)
             return
-        self._on_status(status)
+
+        # Keep a privacy-safe diagnostic trail for non-status messages. We
+        # log keys and candidate temperature values only; never the payload,
+        # appliance code, credentials, tokens, or full JSON envelope.
+        try:
+            message = json.loads(payload)
+            data = message.get("data") if isinstance(message, dict) else None
+            if not isinstance(data, dict):
+                data = {}
+            message_type = message.get("messageType") if isinstance(message, dict) else None
+            command_hex = data.get("commandHex")
+            data_keys = sorted(str(key) for key in data.keys())[:40]
+            candidates: dict[str, int | float] = {}
+            for key, value in data.items():
+                key_text = str(key)
+                key_lower = key_text.lower()
+                looks_like_temperature = (
+                    "temp" in key_lower
+                    or "temperature" in key_lower
+                    or "outdoor" in key_lower
+                    or "water" in key_lower
+                    or "tank" in key_lower
+                    or "dhw" in key_lower
+                    or key_lower in {"t1", "t2", "t2b", "t3", "t4", "t5", "th", "tp", "twin", "twout"}
+                )
+                if looks_like_temperature and isinstance(value, (int, float)) and not isinstance(value, bool):
+                    candidates[key_text[:40]] = value
+            _LOGGER.debug(
+                "MQTT scoped message topic_family=%s channel=%s message_type=%r "
+                "data_keys=%s temperature_candidates=%s",
+                topic_family,
+                channel,
+                message_type,
+                data_keys,
+                candidates,
+            )
+        except (TypeError, ValueError):
+            _LOGGER.debug(
+                "MQTT scoped non-JSON message topic_family=%s channel=%s length=%d",
+                topic_family,
+                channel,
+                len(payload),
+            )
+            return
+
+        # The phone app may publish control frames on the same scoped topic.
+        # Log a valid frame for research but not the surrounding JSON envelope.
+        if isinstance(command_hex, str) and _HEX_FRAME.fullmatch(command_hex):
+            _LOGGER.debug(
+                "MQTT unhandled scoped frame message_type=%r command_hex=%s",
+                message_type,
+                command_hex.lower(),
+            )
 
     def _set_connected(self, connected: bool) -> None:
         if connected == self._connected:
