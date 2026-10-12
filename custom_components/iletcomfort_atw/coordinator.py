@@ -77,7 +77,9 @@ class ILetComfortCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
+            # This isolated test integration performs an initial snapshot only;
+            # subsequent updates are driven by device-scoped MQTT push.
+            update_interval=None,
         )
         self.entry = entry
         region = entry.data.get(CONF_REGION, DEFAULT_REGION)
@@ -85,15 +87,8 @@ class ILetComfortCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.client = ILetComfortClient(api_base=api_base)
         self.appliance_code: str = entry.data.get(CONF_APPLIANCE_CODE, "")
         self._region = region
-        operation_mode = entry.options.get(CONF_OPERATION_MODE)
-        if operation_mode is None:
-            operation_mode = (
-                OPERATION_MODE_PHONE_APP
-                if entry.options.get(
-                    CONF_ENABLE_MQTT_PUSH, DEFAULT_ENABLE_MQTT_PUSH
-                )
-                else DEFAULT_OPERATION_MODE
-            )
+        # This experimental repository is intentionally read-only and MQTT-only.
+        operation_mode = OPERATION_MODE_PHONE_APP
         self._operation_mode: str = operation_mode
         self._push_enabled = operation_mode == OPERATION_MODE_PHONE_APP
         self._push_client: ILetComfortPushClient | None = None
