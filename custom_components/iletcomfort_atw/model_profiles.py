@@ -201,16 +201,19 @@ def decode_atw_status(body: bytearray | bytes) -> ITSStatus:
     # which apply_profile_to_sensors routes to th_temp ("DHW Tank Temperature").
     status.box_bottom_temp = float(body[ATW_DHW_TANK_TEMP_INDEX])
 
-    # byte[24] is a flags/MSB byte, not a fault → no error. The Galmet active
-    # and stopped captures are otherwise identical, so compressor state and
-    # frequency are unavailable rather than false zeroes. Preserve the older
-    # conservative False/0 behavior for the 25-byte Italtherm layout.
+    # byte[24] is a flags/MSB byte, not a fault → no error.
+    # Neither ATW layout exposes a validated compressor-running flag or
+    # frequency in this status frame. In the 25-byte variant byte[1] bit 0
+    # tracks Zone-1 heating demand, not compressor operation. Do not publish
+    # fabricated False/0 values for unavailable compressor/electrical counters.
     status.error_code = 0
-    if is_galmet:
-        status.comp_running = None
-        status.comp_frq = None
-    else:
-        status.comp_running = False
+    status.comp_running = None
+    status.comp_frq = None
+    status.total_kwh = None
+    status.comp_total_run_hours = None
+    status.fan_total_run_hours = None
+    status.pressure_h = None
+    status.pressure_l = None
 
     return status
 
