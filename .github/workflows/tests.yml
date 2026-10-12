@@ -21,3 +21,7 @@ jobs:
           node-version: "22"
       - name: Check Android MQTT probe syntax
         run: node --check tools/frida_mqtt_capture.js
+      - name: Validate read-only Modbus YAML
+        run: |
+          python -m pip install pyyaml
+          python -c "import yaml; d=yaml.safe_load(open('modbus/inventor_ats04s_readonly.yaml', encoding='utf-8')); hub=d['modbus'][0]; assert len(hub['sensors']) >= 20; assert not any(k in hub for k in ('switches','numbers','climates','selects','covers','fans','lights')); print(f\"validated {len(hub['sensors'])} read-only registers\")"
