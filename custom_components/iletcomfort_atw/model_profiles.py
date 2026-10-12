@@ -316,7 +316,7 @@ def atw_sensors_are_placeholder(raw_body: bytes) -> bool:
 
 def _atw_sensors_match_placeholder_pattern(raw_body: bytes) -> bool:
     """Recognize repeated 03 <constant> 00 00 00 00 placeholder groups."""
-    if len(raw_body) < 14 or raw_body[:2] != b"\\x02\\x00":
+    if len(raw_body) < 14 or raw_body[:2] != b"\x02\x00":
         return False
 
     rest = raw_body[2:]
@@ -334,7 +334,7 @@ def _atw_sensors_match_placeholder_pattern(raw_body: bytes) -> bool:
         if (
             len(group) != 6
             or group[0] != 0x03
-            or group[2:] != b"\\x00\\x00\\x00\\x00"
+            or group[2:] != b"\x00\x00\x00\x00"
         ):
             return False
         if constant is None:
