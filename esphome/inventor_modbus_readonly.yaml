@@ -32,12 +32,12 @@ wifi:
 
 captive_portal:
 
-# D1 mini: GPIO4 = D2 (TX), GPIO5 = D1 (RX).
+# D1 mini: D1 / GPIO5 = TX, D2 / GPIO4 = RX.
 # The adapter shown is automatic-direction RS485, so no DE/RE GPIO is configured.
 uart:
   id: hp_uart
-  tx_pin: GPIO4
-  rx_pin: GPIO5
+  tx_pin: GPIO5
+  rx_pin: GPIO4
   baud_rate: 9600
   data_bits: 8
   parity: NONE
