@@ -45,3 +45,18 @@ The current cloud sensor reply for this `171H120F` is a repeated placeholder fra
 ## Current status
 
 Experimental test build `0.1.4` (MQTT-only, read-only). The placeholder-pattern fix is based on captured 171H120F response bytes and is intended to remove fabricated readings. A successful Home Assistant connection and valid live outdoor-temperature reading still need to be verified on the user's instance.
+
+## Direct local Modbus probe (experimental)
+
+The cloud integration cannot retrieve trustworthy live temperatures from some
+`171H120F` firmware variants. If you have a Wemos D1 mini and an automatic-
+direction RS485 adapter, an **experimental read-only ESPHome probe** is provided
+in [`esphome/`](esphome/README.md). It attempts the community-documented Midea
+M-Thermal register map (including outdoor temperature H:107 and DHW tank
+temperature H:115). It has not yet been validated on the specific Inventor
+ATS04S/HU060S3 installation.
+
+Do not wire based on connector names alone: the comparable-device documentation
+places RS485 H1/H2 on the wired controller, and other similarly labelled ports
+may use a different protocol. The ESPHome example exposes read sensors only and
+contains no Modbus write commands.
