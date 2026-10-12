@@ -12,7 +12,7 @@ REGION_URLS = {
     REGION_US: "https://us.dollin.net",
     REGION_EU: "https://eu.dollin.net",
 }
-DEFAULT_REGION = REGION_US
+DEFAULT_REGION = REGION_EU
 
 DEFAULT_SCAN_INTERVAL = 60
 
