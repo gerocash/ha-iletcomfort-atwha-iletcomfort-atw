@@ -1,5 +1,5 @@
 """Tests for appliance-scoped MQTT topic discovery."""
-from custom_components.iletcomfort_atw.mqtt import push_topics
+from custom_components.iletcomfort_atw.mqtt import _topic_log_labels, push_topics
 
 
 def test_topics_are_exactly_scoped_to_one_appliance():
@@ -17,3 +17,9 @@ def test_topics_are_exactly_scoped_to_one_appliance():
 def test_topics_respect_region():
     topics = push_topics("us", "DEVICE1")
     assert all(topic.startswith("us/") for topic in topics)
+
+
+
+def test_topic_log_labels_never_include_appliance_identifier():
+    assert _topic_log_labels("eu/midea/dev/153931629840310") == ("midea", "dev")
+    assert _topic_log_labels("eu/eu_153931629840310/hbt") == ("regional", "hbt")
