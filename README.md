@@ -9,13 +9,13 @@ Separate Home Assistant integration for investigating the ITS/BTRI C3 heat-pump 
 - Applies the ATW 171H120F profile.
 - Recognizes both the known Galmet placeholder frame and the repeated `03 <same byte> 00 00 00 00` sensor template observed on this unit.
 - Reports untrusted sensor fields as unavailable instead of inventing values such as -35 °C.
-- Keeps the upstream MQTT status-push implementation without broad wildcard subscriptions.
+- Uses one initial cloud snapshot during setup, then listens to the device-specific MQTT push topic only. It does not poll every minute and never subscribes to wildcard topics.
 
 ## Important limitation
 
 This build does **not** make the missing outdoor/water sensor temperatures appear by itself. The observed sensor-query response does not carry trustworthy live measurements in this placeholder variant. The official app showed about 9 °C outdoor temperature and 55 °C tank temperature; Home Assistant currently reads 55 °C tank temperature and a 44 °C DHW target from the status frame.
 
-MQTT remains a research path: the documented push handler consumes subtype 0x01 status frames, and the source for the missing outdoor reading has not yet been identified. This repository deliberately does not guess byte offsets or publish placeholder bytes as real measurements.
+MQTT is now enabled in the test build. The documented push handler currently decodes subtype 0x01 status frames; other valid command frames are debug-logged for investigation. The source for the missing outdoor reading has not yet been identified. This repository deliberately does not guess byte offsets or publish placeholder bytes as real measurements.
 
 ## Install with HACS
 
@@ -25,7 +25,7 @@ MQTT remains a research path: the documented push handler consumes subtype 0x01 
 4. Restart Home Assistant.
 5. Add the new integration from **Settings → Devices & services → Add integration** and choose the **Europe (EU)** account region.
 
-Use the existing account only when the official phone app is closed; the cloud has a single active account session. This is an independent config entry and does not overwrite the original `iletcomfort` folder, but the cloud account session may still conflict while both entries poll.
+Use the existing account only when the official phone app is closed; the cloud has a single active account session. This is an independent config entry and does not overwrite the original `iletcomfort` folder, but the cloud account session may still conflict while account-based requests overlap.
 
 ## Safety
 
@@ -35,4 +35,4 @@ Use the existing account only when the official phone app is closed; the cloud h
 
 ## Current status
 
-Experimental test build `0.1.0`. The placeholder-pattern fix is based on captured 171H120F response bytes and is intended to remove fabricated readings. A successful Home Assistant connection and valid live outdoor-temperature reading still need to be verified on the user's instance.
+Experimental test build `0.1.1` (MQTT-only, read-only). The placeholder-pattern fix is based on captured 171H120F response bytes and is intended to remove fabricated readings. A successful Home Assistant connection and valid live outdoor-temperature reading still need to be verified on the user's instance.
