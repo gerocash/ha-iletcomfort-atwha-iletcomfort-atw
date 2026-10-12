@@ -453,8 +453,9 @@ class ILetComfortPushClient:
             await self._hass.async_add_executor_job(self._teardown)
             self._mqtt = None
         if self._tmpdir is not None:
-            self._tmpdir.cleanup()
+            tmpdir = self._tmpdir
             self._tmpdir = None
+            await self._hass.async_add_executor_job(tmpdir.cleanup)
         self._connected = False
 
     def _teardown(self) -> None:
