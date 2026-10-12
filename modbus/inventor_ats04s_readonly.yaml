@@ -304,6 +304,22 @@ modbus:
         data_type: uint16
         scan_interval: 60
 
+      - name: Inventor Thermal Energy High Word
+        unique_id: inventor_mthermal_thermal_energy_high
+        slave: 16
+        address: 145
+        input_type: holding
+        data_type: uint16
+        scan_interval: 60
+
+      - name: Inventor Thermal Energy Low Word
+        unique_id: inventor_mthermal_thermal_energy_low
+        slave: 16
+        address: 146
+        input_type: holding
+        data_type: uint16
+        scan_interval: 60
+
       - name: Inventor Heating COP Raw
         unique_id: inventor_mthermal_cop_raw
         slave: 16
