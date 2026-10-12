@@ -1,0 +1,30 @@
+# Temporary, READ-ONLY Modbus slave-address discovery for the Inventor ATS04S/HU060S3.
+# Only register 131 (wired controller version) is queried at candidate slave IDs 1 and 16.
+# Change host to the RS-485 gateway IP. Gateway must be Modbus-TCP gateway mode, port 502.
+# Remove this block after identifying the responding slave ID; then set that ID in
+# modbus/inventor_ats04s_readonly.yaml. No registers are written.
+
+modbus:
+  - name: inventor_modbus_address_probe
+    type: tcp
+    host: 192.168.1.50 # CHANGE to the RS-485 gateway IP
+    port: 502
+    delay: 1
+    timeout: 5
+    message_wait_milliseconds: 30
+    sensors:
+      - name: Inventor Controller Version Probe Slave 1
+        unique_id: inventor_controller_version_probe_slave_1
+        slave: 1
+        address: 131
+        input_type: holding
+        data_type: uint16
+        scan_interval: 60
+
+      - name: Inventor Controller Version Probe Slave 16
+        unique_id: inventor_controller_version_probe_slave_16
+        slave: 16
+        address: 131
+        input_type: holding
+        data_type: uint16
+        scan_interval: 60
