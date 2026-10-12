@@ -1,7 +1,7 @@
 """Constants for the iLetComfort integration."""
 
 DOMAIN = "iletcomfort_atw"
-PLATFORMS = ["climate", "sensor", "switch", "select", "binary_sensor", "number"]
+PLATFORMS = ["sensor", "binary_sensor"]
 
 CONF_APPLIANCE_CODE = "appliance_code"
 CONF_REGION = "region"
