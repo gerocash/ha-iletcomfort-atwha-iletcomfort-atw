@@ -52,6 +52,15 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[ILetComfortBinarySensorDescription, ...] = (
             data.get("status") is not None and data["status"].error_code != 0
         ),
     ),
+    ILetComfortBinarySensorDescription(
+        key="zone1_heating_active",
+        name="Zone 1 Heating Active",
+        icon="mdi:radiator",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        is_on_fn=lambda data: (
+            data.get("status") is not None and data["status"].pump_system
+        ),
+    ),
 )
 
 
