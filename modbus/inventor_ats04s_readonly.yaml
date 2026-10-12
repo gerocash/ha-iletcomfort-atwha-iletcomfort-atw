@@ -1,0 +1,327 @@
+# Read-only Modbus sensors for Inventor Matrix Split ATS04S / HU060S3
+# Family: Midea M-Thermal split / wired KJRH-style controller, SN8 171H120F.
+#
+# SAFETY: sensor-only configuration. No switches, numbers, climates, or writes.
+#
+# Prerequisite:
+#   Wired controller H1/H2 (RS-485) -> RS-485/Ethernet gateway in MODBUS TCP SERVER mode
+#   -> this Home Assistant host.
+#
+# Set host to the gateway's LAN IP. Configure the gateway for 9600 baud, 8 data bits,
+# no parity, 1 stop bit, and Modbus TCP server mode on port 502.
+#
+# Slave ID: the older M-Thermal Split service manual maps S3 position 0 to address 16.
+# Some later A-series documentation maps position 0 differently. Keep the physical
+# S3 position unchanged and verify with register 131; if there is no response, test
+# the address documented for the actual wired controller/hydronic PCB.
+#
+# These are holding registers (function 03), with the H-register number used as
+# Home Assistant's address (e.g. H100 -> address: 100). Register map is community/
+# controller-family documentation, not confirmed against the user's physical bus yet.
+
+modbus:
+  - name: inventor_mthermal_readonly
+    type: tcp
+    host: 192.168.1.50 # CHANGE to the RS-485 gateway IP
+    port: 502
+    delay: 1
+    timeout: 5
+    message_wait_milliseconds: 30
+
+    sensors:
+      - name: Inventor Compressor Frequency
+        unique_id: inventor_mthermal_compressor_frequency
+        slave: 16
+        address: 100
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: Hz
+        device_class: frequency
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Operating State
+        unique_id: inventor_mthermal_operating_state
+        slave: 16
+        address: 101
+        input_type: holding
+        data_type: uint16
+        scan_interval: 10
+
+      - name: Inventor Fan Speed
+        unique_id: inventor_mthermal_fan_speed
+        slave: 16
+        address: 102
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: rpm
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Water Inlet Temperature
+        unique_id: inventor_mthermal_water_inlet
+        slave: 16
+        address: 104
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Water Outlet Temperature
+        unique_id: inventor_mthermal_water_outlet
+        slave: 16
+        address: 105
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Condenser Temperature T3
+        unique_id: inventor_mthermal_t3
+        slave: 16
+        address: 106
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Outdoor Temperature
+        unique_id: inventor_mthermal_outdoor_temperature
+        slave: 16
+        address: 107
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Compressor Discharge Temperature
+        unique_id: inventor_mthermal_discharge_temperature
+        slave: 16
+        address: 108
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Compressor Return Temperature
+        unique_id: inventor_mthermal_return_temperature
+        slave: 16
+        address: 109
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Total Outlet Water Temperature
+        unique_id: inventor_mthermal_t1
+        slave: 16
+        address: 110
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Refrigerant Liquid Temperature T2
+        unique_id: inventor_mthermal_t2
+        slave: 16
+        address: 112
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Refrigerant Gas Temperature T2B
+        unique_id: inventor_mthermal_t2b
+        slave: 16
+        address: 113
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Room Temperature
+        unique_id: inventor_mthermal_room_temperature
+        slave: 16
+        address: 114
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 30
+
+      - name: Inventor DHW Tank Temperature
+        unique_id: inventor_mthermal_dhw_temperature
+        slave: 16
+        address: 115
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Refrigerant High Pressure
+        unique_id: inventor_mthermal_high_pressure
+        slave: 16
+        address: 116
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: kPa
+        device_class: pressure
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Refrigerant Low Pressure
+        unique_id: inventor_mthermal_low_pressure
+        slave: 16
+        address: 117
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: kPa
+        device_class: pressure
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Outdoor Unit Current
+        unique_id: inventor_mthermal_odu_current
+        slave: 16
+        address: 118
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: A
+        device_class: current
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Outdoor Unit Voltage
+        unique_id: inventor_mthermal_odu_voltage
+        slave: 16
+        address: 119
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: V
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Compressor Runtime
+        unique_id: inventor_mthermal_compressor_runtime
+        slave: 16
+        address: 122
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: h
+        device_class: duration
+        state_class: total_increasing
+        scan_interval: 60
+
+      - name: Inventor Heat Pump Error Code
+        unique_id: inventor_mthermal_error_code
+        slave: 16
+        address: 124
+        input_type: holding
+        data_type: uint16
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor DC Bus Current
+        unique_id: inventor_mthermal_dc_bus_current
+        slave: 16
+        address: 133
+        input_type: holding
+        data_type: uint16
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor DC Bus Voltage
+        unique_id: inventor_mthermal_dc_bus_voltage
+        slave: 16
+        address: 134
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: V
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 15
+
+      - name: Inventor Water Flow
+        unique_id: inventor_mthermal_water_flow
+        slave: 16
+        address: 138
+        input_type: holding
+        data_type: uint16
+        scale: 0.01
+        precision: 2
+        unit_of_measurement: "m³/h"
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Heat Output Power
+        unique_id: inventor_mthermal_heat_output_power
+        slave: 16
+        address: 140
+        input_type: holding
+        data_type: uint16
+        scale: 0.01
+        precision: 2
+        unit_of_measurement: kW
+        device_class: power
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Electrical Energy High Word
+        unique_id: inventor_mthermal_energy_high
+        slave: 16
+        address: 143
+        input_type: holding
+        data_type: uint16
+        scan_interval: 60
+        entity_category: diagnostic
+
+      - name: Inventor Electrical Energy Low Word
+        unique_id: inventor_mthermal_energy_low
+        slave: 16
+        address: 144
+        input_type: holding
+        data_type: uint16
+        scan_interval: 60
+        entity_category: diagnostic
+
+      - name: Inventor Heating COP Raw
+        unique_id: inventor_mthermal_cop_raw
+        slave: 16
+        address: 151
+        input_type: holding
+        data_type: uint16
+        scale: 0.01
+        precision: 2
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Inventor Wired Controller Version
+        unique_id: inventor_mthermal_controller_version
+        slave: 16
+        address: 131
+        input_type: holding
+        data_type: uint16
+        scan_interval: 300
+        entity_category: diagnostic
