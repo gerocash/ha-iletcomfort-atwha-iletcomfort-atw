@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "iLetComfort Heat Pump",
+        "title": "iLetComfort ATW Telemetry Test",
         "description": "Enter your iLetComfort / Dollin cloud credentials and pick the region your account is registered in.",
         "data": {
           "email": "Email",
