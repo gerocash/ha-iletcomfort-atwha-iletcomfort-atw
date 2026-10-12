@@ -5,6 +5,7 @@ Separate Home Assistant integration for investigating the ITS/BTRI C3 heat-pump 
 ## What this test build does
 
 - Uses the iLetComfort/Dollin cloud API and keeps the existing iLetComfort integration installed separately.
+- Exposes only read-only sensor and binary-sensor entities; climate controls, switches, selects and numbers are not loaded.
 - Applies the ATW 171H120F profile.
 - Recognizes both the known Galmet placeholder frame and the repeated `03 <same byte> 00 00 00 00` sensor template observed on this unit.
 - Reports untrusted sensor fields as unavailable instead of inventing values such as -35 °C.
@@ -28,8 +29,7 @@ Use the existing account only when the official phone app is closed; the cloud h
 
 ## Safety
 
-- This integration does not issue heat-pump control commands automatically.
-- Do not use its climate controls until command encoding has been separately validated.
+- This integration exposes no heat-pump control entities. It is telemetry-only.
 - Never commit passwords, access tokens, private keys, certificates, appliance codes, or diagnostic exports.
 - It does not replace or disable the original integration.
 
