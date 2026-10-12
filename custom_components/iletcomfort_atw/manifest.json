@@ -1,0 +1,17 @@
+{
+  "domain": "iletcomfort_atw",
+  "name": "iLetComfort ATW Telemetry Test",
+  "version": "0.1.0",
+  "documentation": "https://github.com/gerocash/ha-iletcomfort-atwha-iletcomfort-atw",
+  "issue_tracker": "https://github.com/gerocash/ha-iletcomfort-atwha-iletcomfort-atw/issues",
+  "iot_class": "cloud_polling",
+  "requirements": [
+    "requests>=2.28",
+    "cryptography>=41.0",
+    "paho-mqtt>=1.6"
+  ],
+  "config_flow": true,
+  "codeowners": [
+    "@gerocash"
+  ]
+}
