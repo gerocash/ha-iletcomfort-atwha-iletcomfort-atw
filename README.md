@@ -7,7 +7,7 @@ Separate Home Assistant integration for investigating the ITS/BTRI C3 heat-pump 
 - Uses the iLetComfort/Dollin cloud API and keeps the existing iLetComfort integration installed separately.
 - Exposes only read-only sensor and binary-sensor entities; climate controls, switches, selects and numbers are not loaded.
 - Applies the ATW 171H120F profile.
-- Exposes a read-only **Zone 1 Heating Active** binary sensor based on the captured `0x04 → 0x05` status-bit change after heating was started on the test unit.
+- Exposes a read-only **Zone 1 Heating Active** binary sensor based on the captured `0x04 → 0x05` status-bit change after heating was started on the test unit. Compressor run state/frequency, pressure and energy counters are marked unavailable for ATW status frames when their layout has not been validated, rather than shown as false zeroes.
 - Recognizes both the known Galmet placeholder frame and the repeated `03 <same byte> 00 00 00 00` sensor template observed on this unit.
 - Reports untrusted sensor fields as unavailable instead of inventing values such as -35 °C.
 - Uses one initial cloud snapshot during setup, then listens to exact appliance-scoped MQTT topics. It checks the confirmed C3 topic and the documented regional `dev`, `will`, and `hbt` topic variants; it does not poll every minute or subscribe to wildcards.
@@ -36,4 +36,4 @@ Use the existing account only when the official phone app is closed; the cloud h
 
 ## Current status
 
-Experimental test build `0.1.3` (MQTT-only, read-only). The placeholder-pattern fix is based on captured 171H120F response bytes and is intended to remove fabricated readings. A successful Home Assistant connection and valid live outdoor-temperature reading still need to be verified on the user's instance.
+Experimental test build `0.1.4` (MQTT-only, read-only). The placeholder-pattern fix is based on captured 171H120F response bytes and is intended to remove fabricated readings. A successful Home Assistant connection and valid live outdoor-temperature reading still need to be verified on the user's instance.
