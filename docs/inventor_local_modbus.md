@@ -9,6 +9,7 @@ The iLetComfort HTTP sensor response for this unit is a repeated placeholder fra
 Relevant source references:
 
 - Inventor ATS04S/HU060S3 wired-controller manual: https://www.manualslib.de/manual/1287671/Inventor-Ats04S.html
+- Inventor's 2026 Matrix Split catalog lists the ATS04S/HU060S3 among the models with Modbus as standard: https://www.mitsubishi-lumelco.com/wp-content/uploads/2026/03/Tarifa_Aerotermia-2026.pdf
 - Midea M-Thermal Split service manual, Modbus function / switch S3: https://www.midea.com.ua/sites/default/files/downloadables-documents/pdf/sm-midea-series-split-m-thermal-heat-pump-20200424-v31.pdf
 - Community Home Assistant register YAML, developed against a 171H120F wired controller: https://github.com/timlaing/modbus_local_gateway/blob/main/custom_components/modbus_local_gateway/device_configs/midea_heat_pump.yaml
 - Register table / sensor documentation: https://taphome.com/de/compatibility/midea-heat-pump/
@@ -32,9 +33,9 @@ Do not move switch S3 while powered. The older M-Thermal Split service manual sa
 
 1. Make a Home Assistant backup before changing YAML.
 2. Install/configure the RS-485 Ethernet gateway and confirm it is reachable from Home Assistant.
-3. Copy the content of `inventor_ats04s_readonly.yaml` into `configuration.yaml` (or merge the `modbus:` block into an existing `modbus:` section; do not create two top-level `modbus:` keys).
-4. Change the IP address and verify the slave ID.
+3. Start with `modbus/inventor_modbus_address_probe.yaml` and change the IP; this probes only read-only register 131 at slave IDs 1 and 16.
+4. Once one probe value returns the controller version, remove the probe block and use `modbus/inventor_ats04s_readonly.yaml` with the responding `slave:` ID and the same gateway IP. Merge the `modbus:` block into an existing `modbus:` section if one already exists; do not create two top-level `modbus:` keys.
 5. Run **Developer Tools → YAML → Check configuration**, then restart Home Assistant.
-6. First confirm that `Inventor Wired Controller Version` returns a meaningful value and that `Inventor Outdoor Temperature` matches the outdoor temperature shown on the controller. Only then trust the other readings.
+6. First confirm that `Inventor Wired Controller Version` returns a plausible value and that `Inventor Outdoor Temperature` matches the temperature shown on the controller. Only then trust the other readings.
 
 This YAML intentionally defines **sensors only**. It contains no Modbus switches, numbers, climate, or writes. The register map is strong candidate evidence for the 171H120F controller family, but it has not yet been tested against this specific ATS04S/HU060S3 installation; exact controller version and register responses must be validated on the physical bus.
