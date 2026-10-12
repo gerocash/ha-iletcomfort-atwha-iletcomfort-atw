@@ -91,6 +91,19 @@ def push_topics(region: str, appliance_code: str) -> list[str]:
     ]
 
 
+def _topic_log_labels(topic: str) -> tuple[str, str]:
+    """Return safe topic labels without exposing the appliance identifier."""
+    parts = topic.strip("/").split("/")
+    if "midea" in parts:
+        index = parts.index("midea")
+        channel = parts[index + 1] if index + 1 < len(parts) else "unknown"
+        return "midea", channel
+    channel = parts[-1] if parts else "unknown"
+    if channel not in {"dev", "will", "hbt"}:
+        channel = "other"
+    return "regional", channel
+
+
 def decode_push_payload(payload: str) -> ITSStatus | None:
     """Decode a ``dev`` push payload into an :class:`ITSStatus`, or None.
 
@@ -326,8 +339,7 @@ class ILetComfortPushClient:
         topic = self._subscription_topics.pop(mid, None)
         if topic is None:
             return
-        topic_family = "midea" if "/midea/" in topic else "regional"
-        channel = topic.rsplit("/", 1)[-1]
+        topic_family, channel = _topic_log_labels(topic)
         codes = []
         for code in (granted_qos or []):
             value = getattr(code, "value", code)
@@ -364,8 +376,7 @@ class ILetComfortPushClient:
             return
 
         topic = str(getattr(msg, "topic", ""))
-        topic_family = "midea" if "/midea/" in topic else "regional"
-        channel = topic.rsplit("/", 1)[-1]
+        topic_family, channel = _topic_log_labels(topic)
 
         # Parse and log safe telemetry hints BEFORE the C3 commandHex decoder.
         # A valid status frame can still carry additional JSON fields in data.
