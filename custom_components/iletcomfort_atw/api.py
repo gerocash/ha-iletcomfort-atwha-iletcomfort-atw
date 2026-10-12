@@ -286,12 +286,12 @@ class ITSStatus:
     vacation_end_month: int = 0
     vacation_end_day: int = 0
     exv_drg: int = 0
-    pressure_h: int = 0
-    pressure_l: int = 0
+    pressure_h: int | None = 0
+    pressure_l: int | None = 0
     comp_frq: int | None = 0
-    total_kwh: int = 0
-    comp_total_run_hours: int = 0
-    fan_total_run_hours: int = 0
+    total_kwh: int | None = 0
+    comp_total_run_hours: int | None = 0
+    fan_total_run_hours: int | None = 0
     # KJRH-120L dual variant's separate DHW target (status body[15], issue #5).
     kjrh120l_dhw_setpoint: float | None = None
     raw_body: bytes = field(default_factory=bytes, repr=False)
