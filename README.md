@@ -28,6 +28,10 @@ MQTT is enabled in the test build. Incoming JSON is inspected for temperature-li
 
 Use the existing account only when the official phone app is closed; the cloud has a single active account session. This is an independent config entry and does not overwrite the original `iletcomfort` folder, but the cloud account session may still conflict while account-based requests overlap.
 
+## Local Modbus alternative (best path for full telemetry)
+
+Your ATS04S/HU060S3 belongs to the Midea M-Thermal split family. A separate wired-controller Modbus RTU interface exposes the operational registers that are missing from iLetComfort HTTP: compressor frequency, outdoor and water temperatures, pressure, run hours, flow, power and energy. A candidate read-only Home Assistant YAML has been prepared at [modbus/inventor_ats04s_readonly.yaml](modbus/inventor_ats04s_readonly.yaml), with hardware notes in [docs/inventor_local_modbus.md](docs/inventor_local_modbus.md). This is **not installed yet** because a physical RS-485 gateway has to be connected and its slave ID/controller revision verified first.
+
 ## Find the missing live temperatures
 
 The current cloud sensor reply for this `171H120F` is a repeated placeholder frame, and the MQTT broker accepts the scoped subscriptions but has not sent application messages. The next diagnostic is a privacy-redacting runtime capture of the official Android app to identify its exact publish/subscribe topic. See [the local Android capture procedure](docs/local_android_capture.md) and [the Frida probe](tools/frida_mqtt_capture.js). No MQTT wildcard is used.
