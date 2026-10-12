@@ -152,6 +152,7 @@ class ILetComfortPushClient:
         self._mqtt: mqtt.Client | None = None
         self._tmpdir: tempfile.TemporaryDirectory[str] | None = None
         self._connected = False
+        self._subscription_topics: dict[int, str] = {}
         self._renewal_handle: TimerHandle | None = None
         self._stopped = False
 
@@ -279,6 +280,7 @@ class ILetComfortPushClient:
             tls_version=ssl.PROTOCOL_TLSv1_2,
         )
         c.on_connect = self._on_connect
+        c.on_subscribe = self._on_subscribe
         c.on_disconnect = self._on_disconnect
         c.on_message = self._on_message
         self._mqtt = c
@@ -302,12 +304,51 @@ class ILetComfortPushClient:
             )
             return
         for topic in push_topics(self._region, self._appliance_code):
-            client.subscribe(topic, qos=0)
+            rc_sub, mid = client.subscribe(topic, qos=0)
+            if rc_sub == mqtt.MQTT_ERR_SUCCESS:
+                self._subscription_topics[mid] = topic
+            else:
+                _LOGGER.warning(
+                    "MQTT subscribe request failed (topic_family=%s, channel=%s, rc=%s)",
+                    "midea" if "/midea/" in topic else "regional",
+                    topic.rsplit("/", 1)[-1],
+                    rc_sub,
+                )
         _LOGGER.debug(
-            "MQTT push subscribed for appliance %s",
+            "MQTT subscribe requests queued for appliance %s (%d scoped topics)",
             mask_identifier(self._appliance_code),
+            len(self._subscription_topics),
         )
         self._set_connected(True)
+
+    def _on_subscribe(self, client, userdata, mid, granted_qos) -> None:
+        """Log the broker's acknowledgement for an individual scoped topic."""
+        topic = self._subscription_topics.pop(mid, None)
+        if topic is None:
+            return
+        topic_family = "midea" if "/midea/" in topic else "regional"
+        channel = topic.rsplit("/", 1)[-1]
+        codes = []
+        for code in (granted_qos or []):
+            value = getattr(code, "value", code)
+            try:
+                codes.append(int(value))
+            except (TypeError, ValueError):
+                codes.append(-1)
+        if any(code >= 128 or code < 0 for code in codes):
+            _LOGGER.warning(
+                "MQTT subscription rejected (topic_family=%s, channel=%s, codes=%s)",
+                topic_family,
+                channel,
+                codes,
+            )
+        else:
+            _LOGGER.debug(
+                "MQTT subscription acknowledged (topic_family=%s, channel=%s, codes=%s)",
+                topic_family,
+                channel,
+                codes,
+            )
 
     def _on_disconnect(self, client, userdata, rc) -> None:
         _LOGGER.debug(
