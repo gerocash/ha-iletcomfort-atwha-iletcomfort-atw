@@ -43,3 +43,19 @@ def test_171h120f_zone1_heating_bit_matches_captured_before_after():
     )
     assert decode_atw_status(before).pump_system is False
     assert decode_atw_status(after).pump_system is True
+
+
+def test_171h120f_unverified_compressor_fields_are_unavailable():
+    body = bytes.fromhex(
+        "01 05 17 90 03 03 23 1e 2c 30 41 23 19 05 37 "
+        "19 19 05 3c 22 3c 14 30 00 80"
+    )
+    status = decode_atw_status(body)
+    assert status.pump_system is True
+    assert status.comp_running is None
+    assert status.comp_frq is None
+    assert status.total_kwh is None
+    assert status.comp_total_run_hours is None
+    assert status.fan_total_run_hours is None
+    assert status.pressure_h is None
+    assert status.pressure_l is None
